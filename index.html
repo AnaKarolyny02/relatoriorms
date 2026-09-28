@@ -34,11 +34,11 @@ main{flex:1;overflow:auto;padding:14px}
 .c h3{margin:0;background:var(--hd);color:#fff;font-size:13px;padding:7px 12px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
 .c h3 select{font-size:11px;padding:1px 4px;border-radius:4px}
 .bd{padding:10px 12px;max-height:420px;overflow:auto}
-.br{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px}.br[data-f]{cursor:pointer}.br[data-f]:hover .lb{color:var(--g2)}
-.lb{width:32%;min-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
-.tr{flex:1;background:var(--tr);border-radius:4px;height:16px}.tr i{display:block;height:100%;border-radius:4px;overflow:hidden;position:relative;min-width:2px}
+.br{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px}.br[data-f]{cursor:pointer}.br[data-f]:hover .lb{color:var(--g2)}
+.lb{width:36%;min-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lb small{color:var(--mut)}.rk{display:inline-block;width:28px;color:var(--mut);font-weight:700}
+.tr{flex:1;background:var(--tr);border-radius:6px;height:22px}.tr i{display:block;height:100%;border-radius:6px;min-width:3px}.gb .tr{height:12px;border-radius:4px}.gb .tr i{border-radius:4px}.gl{display:flex;align-items:center;gap:8px;margin:2px 0}.gl em{width:56px}.gb{align-items:flex-start;border-bottom:1px solid var(--bd);padding-bottom:6px}.gb .lb{padding-top:0}
 .tr b{position:absolute;right:0;top:0;bottom:0;background:var(--r)}
-.br em{width:52px;font-style:normal;font-weight:600}
+.br em{width:96px;font-style:normal;font-weight:700;text-align:right;white-space:nowrap}.br em small{font-weight:400;color:var(--mut);margin-left:4px}
 .lg{font-size:11px;color:var(--mut);margin-bottom:4px}.lg span{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 3px 0 8px}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--bd)}
 th{position:sticky;top:0;background:var(--tr);text-align:right}th:nth-child(2),td:nth-child(2){text-align:left}
@@ -87,9 +87,10 @@ tr[data-f],.k{cursor:pointer}.k:hover{outline:2px solid var(--g2)}tr[data-f]:hov
 <div class="gr">
 <div class="c"><h3>Qtd de RMs por atendimento</h3><div class="bd" id="g1"></div></div>
 <div class="c"><h3>Qtd de RMs por status</h3><div class="bd" id="g2"></div></div>
-<div class="c"><h3>Qtd de RMs por UTE (top 15)</h3><div class="bd"><div class="lg">Total <span style="background:var(--r)"></span>Urgentes</div><div id="g3"></div></div></div>
+<div class="c"><h3>Participação por separador</h3><div class="bd" id="g7"></div></div>
 <div class="c s6"><h3>🏆 Ranking · Qtd de separações por separador</h3><div class="bd" id="g4"></div></div>
 <div class="c s6"><h3>🚨 Ranking · Separações em atendimentos urgentes</h3><div class="bd" id="g5"></div></div>
+<div class="c s12"><h3>Qtd de RMs por UTE · normal x urgente</h3><div class="bd" id="g3"></div></div>
 <div class="c s12"><h3>Separações ao longo do tempo <select id="gb"><option value="d">Por dia</option><option value="m">Por mês</option></select></h3><div class="bd" id="g6"></div></div>
 <div class="c s12"><h3>Detalhamento por separador</h3><div class="bd" style="max-height:480px"><table id="tb"></table></div></div>
 </div>
@@ -136,8 +137,27 @@ function filt(){
  return[fr,fs];
 }
 function bars(id,items,o={}){
- const mx=Math.max(1,...items.map(i=>i.v));
- $(id).innerHTML=items.map((i,n)=>`<div class="br" ${i.f?`data-f="${i.f}" data-k="${esc(i.k)}"`:''}><span class="lb" title="${esc(i.k)}">${o.rk?(n+1)+'. ':''}${esc(i.k)}</span><div class="tr"><i style="width:${i.v/mx*100}%;background:${i.c||'var(--g2)'}">${i.u!=null?`<b style="width:${i.v?i.u/i.v*100:0}%"></b>`:''}</i></div><em>${N(i.v)}</em></div>`).join('')||'<p class="mut">Sem dados</p>';
+ const mx=Math.max(1,...items.map(i=>i.v)),M=['🥇','🥈','🥉'];
+ $(id).innerHTML=items.map((i,n)=>`<div class="br" ${i.f?`data-f="${i.f}" data-k="${esc(i.k)}"`:''}><span class="lb" title="${esc(i.k)}">${o.rk?`<span class="rk">${M[n]||n+1+'º'}</span>`:''}${esc(i.k)}</span><div class="tr"><i style="width:${i.v/mx*100}%;background:${i.c||'linear-gradient(90deg,var(--g),var(--g2))'}"></i></div><em>${N(i.v)}${i.p!=null?`<small>${P(i.p)}</small>`:''}</em></div>`).join('')||'<p class="mut">Sem dados</p>';
+}
+function vcol(id,items){
+ if(!items.length){$(id).innerHTML='<p class="mut">Sem dados</p>';return}
+ const W=420,H=260,B=56,T=28,mx=Math.max(1,...items.map(i=>i.v)),st=(W-20)/items.length,bw=Math.min(72,st*.62),tot=items.reduce((s,i)=>s+i.v,0);
+ $(id).innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto"><line x1="10" x2="${W-10}" y1="${H-B}" y2="${H-B}" stroke="var(--bd)"/>`+items.map((i,x)=>{
+  const h=Math.max((H-B-T)*i.v/mx,3),cx=10+st*(x+.5),y=H-B-h,w=i.k.split(' '),m=Math.ceil(w.length/2);
+  return `<g data-f="${i.f}" data-k="${esc(i.k)}" style="cursor:pointer"><title>${esc(i.k)}: ${N(i.v)} (${P(i.v/tot)})</title><rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${h}" rx="4" fill="${i.c}"/><text x="${cx}" y="${y-6}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--tx)">${N(i.v)}</text><text x="${cx}" y="${H-B+16}" text-anchor="middle" font-size="10.5" fill="var(--tx)">${esc(w.slice(0,m).join(' '))}</text><text x="${cx}" y="${H-B+29}" text-anchor="middle" font-size="10.5" fill="var(--tx)">${esc(w.slice(m).join(' '))}</text><text x="${cx}" y="${H-B+43}" text-anchor="middle" font-size="10" fill="var(--mut)">${P(i.v/tot)}</text></g>`}).join('')+'</svg>';
+}
+function gbars(id,items){
+ const sr=[['NORMAL','var(--g2)'],['URGENTE','var(--r)'],['(Em branco)','#3b82f6']],mx=Math.max(1,...items.flatMap(i=>i.s));
+ $(id).innerHTML=`<div class="lg">${sr.map(s=>`<span style="background:${s[1]}"></span>${s[0]}`).join('')}</div>`+items.map(i=>`<div class="br gb" data-f="fus" data-k="${esc(i.k)}"><span class="lb" title="${esc(i.k)}">${esc(i.k)} <small>(${N(i.t)})</small></span><div style="flex:1">${sr.map((s,x)=>i.s[x]||x<2?`<div class="gl"><div class="tr"><i style="width:${i.s[x]/mx*100}%;background:${s[1]}"></i></div><em>${N(i.s[x])}</em></div>`:'').join('')}</div></div>`).join('')||'<p class="mut">Sem dados</p>';
+}
+function donut(id,S,tot){
+ if(!tot){$(id).innerHTML='<p class="mut">Sem dados</p>';return}
+ const pal=['#0b6b1c','#1aa82f','#7ac943','#f2b705','#d7261e','#1f77b4','#8e44ad','#e67e22','#7f8c8d'],top=S.slice(0,8),ot=tot-top.reduce((s,i)=>s+i.v,0),it=top.map(i=>({k:i.k,v:i.v,f:1}));if(ot>0)it.push({k:'Outros',v:ot});
+ let a=-Math.PI/2;const R=92,r=58,pt=(g,d)=>(100+d*Math.cos(g)).toFixed(1)+' '+(100+d*Math.sin(g)).toFixed(1);
+ const at=i=>i.f?`data-f="fsp" data-k="${esc(i.k)}" style="cursor:pointer"`:'';
+ const paths=it.map((i,x)=>{const f=Math.min(i.v/tot,.9999),b=a+f*2*Math.PI,l=f>.5?1:0,d=`M${pt(a,R)}A${R} ${R} 0 ${l} 1 ${pt(b,R)}L${pt(b,r)}A${r} ${r} 0 ${l} 0 ${pt(a,r)}Z`;a=b;return `<path d="${d}" fill="${pal[x]}" ${at(i)}><title>${esc(i.k)}: ${N(i.v)} (${P(i.v/tot)})</title></path>`}).join('');
+ $(id).innerHTML=`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center"><svg viewBox="0 0 200 200" style="width:180px;flex:none">${paths}<text x="100" y="99" text-anchor="middle" font-size="22" font-weight="700" fill="var(--tx)">${N(tot)}</text><text x="100" y="116" text-anchor="middle" font-size="10" fill="var(--mut)">separações</text></svg><div style="flex:1;min-width:130px;font-size:12px;line-height:1.9">${it.map((i,x)=>`<div ${at(i)}><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${pal[x]};margin-right:6px"></span>${esc(i.k)} <b>${P(i.v/tot)}</b></div>`).join('')}</div></div>`;
 }
 const cAt=k=>k==='URGENTE'?'var(--r)':k==='NORMAL'?'var(--g2)':'#8a9a8e';
 const cSt=k=>/COMPLETA/.test(k)?'var(--g2)':k==='ATD. PARCIAL'?'var(--y)':k==='SEM ESTOQUE'?'var(--r)':'#8a9a8e';
@@ -148,12 +168,12 @@ function render(){
  const K=[['Quantidade de RMs',N(fr.length),'RMs distintas'],['Qtd de separações',N(fs.length),'números de separação'],['Média diária de separações',D1(avg),`em ${N(dias)} dias com movimento`],['Média diária de RMs',D1(dias?fr.length/new Set(fr.map(r=>r.dt)).size:0),'RMs por dia com movimento'],['RMs urgentes',N(nu),P(fr.length?nu/fr.length:0)+' do total',['fat','URGENTE']],['Atendimento completo',P(fr.length?comp/fr.length:0),N(comp)+' RMs',['fst','ATD. COMPLETA']],['RMs pendentes',N(pen),P(fr.length?pen/fr.length:0)+' do total',['fpe','SIM']],['RMs c/ várias separações',N(mult),P(fr.length?mult/fr.length:0)+' do total',['fmu','1']]];
  $('#kp').innerHTML=K.map(k=>`<div class="k" title="Clique para ver as RMs" ${k[3]?`data-kf="${k[3][0]}" data-kv="${k[3][1]}"`:''}><h4>${k[0]}</h4><div>${k[1]}</div><p>${k[2]}</p></div>`).join('');
  const cnt=(a,f)=>[...grp(a,f)].map(([k,v])=>({k,v:v.length})).sort((x,y)=>y.v-x.v);
- bars('#g1',cnt(fr,r=>r.at).map(i=>({...i,f:'fat',c:cAt(i.k)})));
- bars('#g2',cnt(fr,r=>r.st).map(i=>({...i,f:'fst',c:cSt(i.k)})));
- bars('#g3',[...grp(fr,r=>r.us)].map(([k,v])=>({k,v:v.length,u:v.filter(U).length,f:'fus'})).sort((x,y)=>y.v-x.v).slice(0,15));
+ vcol('#g1',cnt(fr,r=>r.at).map(i=>({...i,f:'fat',c:cAt(i.k)})));
+ vcol('#g2',cnt(fr,r=>r.st).map(i=>({...i,f:'fst',c:cSt(i.k)})));
+ gbars('#g3',[...grp(fr,r=>r.us)].map(([k,v])=>({k,t:v.length,s:['NORMAL','URGENTE','(Em branco)'].map(a=>v.filter(r=>r.at===a).length)})).sort((x,y)=>y.t-x.t));
  const S=[...grp(fs,s=>s.sp)].map(([k,v])=>{const d=new Set(v.map(s=>s.dt)).size,u=v.filter(s=>U(s.r)).length;return{k,v:v.length,u,rms:new Set(v.map(s=>s.r.rm)).size,d,m:v.length/d}}).sort((a,b)=>b.v-a.v);
- bars('#g4',S.slice(0,15).map(i=>({k:i.k,v:i.v,u:i.u,f:'fsp'})),{rk:1});
- bars('#g5',S.filter(i=>i.u).sort((a,b)=>b.u-a.u).slice(0,15).map(i=>({k:i.k,v:i.u,c:'var(--r)',f:'fsp'})),{rk:1});
+ bars('#g4',S.slice(0,15).map(i=>({k:i.k,v:i.v,p:i.v/fs.length,f:'fsp'})),{rk:1});donut('#g7',S,fs.length);
+ const tu=S.reduce((s,i)=>s+i.u,0);bars('#g5',S.filter(i=>i.u).sort((a,b)=>b.u-a.u).slice(0,15).map(i=>({k:i.k,v:i.u,p:i.u/tu,c:'linear-gradient(90deg,#a01812,var(--r))',f:'fsp'})),{rk:1});
  $('#tb').innerHTML='<tr><th>#</th><th>Separador</th><th>Separações</th><th>% do total</th><th>RMs</th><th>Urgentes</th><th>% urgentes</th><th>Dias ativos</th><th>Média/dia</th></tr>'+S.map((i,n)=>`<tr data-f="fsp" data-k="${esc(i.k)}" title="Clique para ver as RMs"><td>${n+1}</td><td>${esc(i.k)}</td><td>${N(i.v)}</td><td>${P(fs.length?i.v/fs.length:0)}</td><td>${N(i.rms)}</td><td>${N(i.u)}</td><td>${P(i.v?i.u/i.v:0)}</td><td>${N(i.d)}</td><td>${D1(i.m)}</td></tr>`).join('');
  line(fs,avg);
  if($('#dw').classList.contains('on'))lista(fr);
